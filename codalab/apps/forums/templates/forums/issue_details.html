@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load url from future %}
+
+{% block page_title %}All Issues Details and Status {% endblock page_title %}
+
+{% block extra_headers %}
+    <link rel="stylesheet" href="{{ STATIC_URL }}forums/forums.css">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock extra_headers %}
+
+{% block extra_styles %}
+.control-label:after {
+  content:" * ";
+  color:red;
+}
+{% endblock extra_styles %}
+
+{% block extra_scripts %}
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+{% endblock extra_scripts %}
+
+{% block content_wrapper %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12">
+                <h2>{{ forum.competition.title }}</h2>
+                
+            </div>
+            
+            <div class="col-lg-7"> 
+            <a href="{% url 'competitions:view' pk=forum.competition.pk %}" class="btn btn-default pull-left">Go back to competition</a>
+            </div>
+            
+            <div class="col-lg-5">
+            <a href="https://wiki.nci.nih.gov/display/MEDICI/Tracking+Issues" target="_blank" class="pull-right">Help</a>
+            </div>
+            
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel forum-panel">
+                   
+                   <div class="table-responsive">
+                        <table class="table resultsTable table-striped table-bordered" id="user_results">
+                        <thead>
+                            <tr bgcolor="#648ca8" style="color:#fff">
+                                <th color="#fff">#</th>
+                                                                <th style="width:300px">Issue Title</th>
+                                <th style="width:400px">Issue Description </th>
+                                <th color="#fff">Reported On</th>
+                                <th color="#fff">Status</th>
+                                <th color="#fff">Closed On <span style="color:red">*</span></th>
+                                <th color="#fff">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                         {% for issue in issueList %}
+                        <tr>
+              <td>{{ forloop.counter }}</td>
+                    <td><div style="width:300px;word-wrap:break-word"> {{ issue.title }}</div></div> </td>
+                            <td><div style="width:300px;word-wrap:break-word"> {{ issue.description }}</div> </td>
+                            <td> {{ issue.reported_on }} </td>
+                            <td>
+                            <select>
+                                 <option value="Open" {% if issue.status == 'Open' %}selected="selected"{% endif %}> Open  </option>
+                                 <option value="Closed" {% if issue.status == 'Closed' %}selected="selected"{% endif %}> Closed </option>
+                 <option value="Varified" {% if issue.status == 'Varified' %}selected="selected"{% endif %}> Verified </option>
+                 <option value="Reopen" {% if issue.status == 'Reopen' %}selected="selected"{% endif %}> Reopen </option>
+                                 <option value="Waiting for User Input" {% if issue.status == 'Waiting for User Input' %}selected="selected"{% endif %}>  Waiting for User Input </option>
+                                 <option value="Support team Working" {% if issue.status == 'Support team Working' %}selected="selected"{% endif %}>  Support team Working </option>
+                            </select>
+                            
+                            </td>
+                            <td><input type="text" class="datepicker" value={{ issue.closed_on }}></td>  
+                                                        <td> <input type="hidden" value={{ issue.id }}>
+                                            <button type="button" class="update">Update</button>
+                            </td>       
+                        </tr>
+                        {% endfor %}                        
+                        </tbody> 
+                        </table>
+                  </div>
+            </div>
+               
+            </div>
+        </div>
+    </div>
+    <script>
+    
+    $( function() {
+    $( ".datepicker" ).datepicker();
+  } );
+    
+    
+$(".update").click(function(e) {
+ 
+  var competitionId = 1;
+  console.log(competitionId);
+  
+  var selClosedON=$(this).parent().prev().children().val();
+  var selStatus=$(this).parent().prev().prev().children().val();
+  var id=$(this).prev().val();
+  console.log(id,selClosedON);
+  console.log("--- id  ----");
+  if(selClosedON)
+  {
+  $(this).parent().parent().children('th').css('background-color','#b3ffb3');
+  
+   $.ajax({
+            url: '/api/competition/' + competitionId + '/submission/issueUpdate?status=' + encodeURIComponent(selStatus) +
+                                                                               '&closedON=' + encodeURIComponent(selClosedON)+
+                                                                               '&issueId='+encodeURIComponent(id),
+            type: 'post',
+            cache: false,
+            
+        }).done(function(response) {
+            console.log(response);
+            
+           
+        }).fail(function(jqXHR) {
+            var msg = 'An unexpected error occurred.';
+            if (jqXHR.status == 403) {
+                msg = jqXHR.responseJSON.detail;
+            }
+            
+        }); 
+   }
+  else
+  {
+     alert("Please select the value for Closed On field");
+  }
+ });
+
+</script>
+{% endblock content_wrapper %}
+

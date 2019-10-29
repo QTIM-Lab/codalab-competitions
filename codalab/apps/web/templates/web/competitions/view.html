@@ -136,9 +136,24 @@
                     <!--<li><a href="#public_submissions" role="tab" data-toggle="tab">Public submissions</a></li>-->
                     <li><a href="{% url 'competitions:public_submissions' pk=competition.pk%}">Public Submissions</a></li>
                     {% endif %}
+
                     {% if competition.enable_forum %}
                     <li><a href="{% url 'forum_detail' forum_pk=competition.forum.pk %}">Forums <i class="glyphicon glyphicon-log-in"></i></a></li>
                     {% endif %}
+
+                    <!-- MedICI Issue Reporting System add on start-->
+        
+                    {% if  user.is_authenticated %}
+                    <li><a href="{%url 'report_issue' forum_pk=competition.forum.pk %}">Report Issue <i class="glyphicon glyphicon-log-in"></i></a></li>
+                    {% endif %}
+                    
+                     
+                    {% if is_admin_or_owner %}
+                    <li><a href="{%url 'new_issue' forum_pk=competition.forum.pk %}">Issue Status <i class="glyphicon glyphicon-log-in"></i></a></li>
+                    {% endif %}
+
+                    <!-- MedICI Issue Reporting System add on end -->
+
                     {% if competition.enable_teams and not competition.allow_organizer_teams %}
                         {% if my_status == "approved" %}
                             <li>

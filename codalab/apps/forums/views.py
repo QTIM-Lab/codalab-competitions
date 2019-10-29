@@ -1,5 +1,11 @@
 import datetime
 
+# MedICI Issue Reporting System add on
+import csv
+import re
+from .helpers import send_mail
+
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -168,3 +174,121 @@ def pin_thread(request, thread_pk):
         return HttpResponseRedirect(thread.forum.get_absolute_url())
     else:
         raise PermissionDenied()
+
+
+# MedICI Issue Reporting System add on
+
+
+class IssueReportView(ForumBaseMixin, DetailView):
+    model=Forum
+    template_name="forums/issue_details.html"
+    pk_url_kwarg ='forum_pk' 
+
+    def get_context_data(self, **kwargs):
+        print "inside sam test ---------------------------------->"
+        context = super(IssueReportView, self).get_context_data(**kwargs)
+        r = csv.reader(open('apps/forums/Issue_Details.csv')) # Here your csv file
+    
+        lines = list(r)
+        fList=[]
+
+        for x in lines[1:]:
+            is1 = {'id':x[0] , 'title':x[1] ,'description':x[2],'reported_on':x[3] , 'status':x[4], 'closed_on':x[5]}
+            fList.append(is1)
+
+        context["issueList"]=fList
+        print(context["issueList"])
+        return context
+
+    """ added by Samarth """
+class CreateReportView(ForumBaseMixin, RedirectToThreadMixin, LoginRequiredMixin, CreateView):
+    """ View to post on current thread."""
+    model = Thread
+    template_name = "forums/report_issue_form.html"
+    form_class = ThreadForm
+    #print "from Create Report view "
+    def form_valid(self, form):
+        print "inside the createReportView form_valid"
+        self.thread = form.save(commit=False)
+        print "1.1"
+        self.thread.forum = self.forum
+        print "1.2"
+        self.thread.started_by = self.request.user
+        print "1.3"
+        self.thread.last_post_date = datetime.datetime.now()
+        # self.thread.save()
+
+        # Make first post in the thread with the content
+        """ Post.objects.create(thread=self.thread,
+                            content=form.cleaned_data['content'],
+                            posted_by=self.request.user)
+        """ 
+        # comment
+          
+        r = csv.reader(open('apps/forums/Issue_Details.csv')) # Here your csv file
+        lines = list(r)
+        current_time = datetime.datetime.now()
+        openDate=current_time.strftime('%m/%d/%Y')
+            
+        nextNum=len(lines)+1
+        titleStr=re.sub('[^a-zA-Z0-9 \n\.]', '', self.thread.title)
+        contentStr=re.sub('[^a-zA-Z0-9 \n\.]', '', form.cleaned_data['content'])
+        
+        if len(titleStr)>150:
+           titleStr=titleStr[0:150]
+           
+        if len(contentStr)>5000:
+           contentStr=contentStr[0:5000]
+           
+        newIssue=[nextNum,titleStr,contentStr,openDate,'Open','']
+
+        lines.append(newIssue)
+        writer = csv.writer(open('apps/forums/Issue_Details.csv', 'w'))
+        writer.writerows(lines)
+        
+        
+        print "1.4"
+        send_mail(
+            context_data={
+                 'thread':self.thread,
+                 'user':self.request.user,
+                 'content':form.cleaned_data['content'],
+            },
+            subject='New issue -'+self.thread.title,
+            html_file="forums/emails/new_issue_post.html",
+            text_file="forums/emails/new_issue_post.txt",
+            to_email='bbearce@mgh.harvard.edu'
+        )
+        #issueDetail=IssueDetails(competitionID=1,title="test one", description="test")
+        #issueDetail.save() 
+
+
+        #print "before sent responce create thread view"+ self.get_success_url()
+        return HttpResponseRedirect("http://medici-codalab-master.eastus.cloudapp.azure.com/")
+        #return HttpResponseRedirect("forums/report_issue_page.html")
+        #return render(request,"forums/report_issue_page.html")
+
+
+## BB - not sure what this is doing yet
+# class Issue_status(ForumBaseMixin,DetailView):
+#     model=Thread
+#     template_name="forums/issue_details.html"
+#     pk_url_kwarg = 'forum_pk'
+    
+#     def get_context_data(self, **kwargs):
+#         print("--- Inside Issue_Status ---")
+#         context = super(Issue_status, self).get_context_data(**kwargs)
+#         print("inside function")
+#         r = csv.reader(open('apps/forums/Issue_Details.csv')) # Here your csv file
+    
+#         lines = list(r)
+#         fList=[]
+#         for x in lines[1:]:
+#             is1 = {'id':x[0] , 'title':x[1] ,'description':x[2],'reported_on':x[3] , 'status':x[4], 'closed_on':x[5]}
+#             fList.append(is1)
+            
+        
+#         context["issueList"]=fList
+#         print(context["issueList"])
+#         return context
+

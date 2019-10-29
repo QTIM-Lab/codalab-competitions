@@ -1,0 +1,12 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+   
+    <p> User reported the below issue. Please find the details.</p>
+    
+    <p> Reported by       : {{user.email}} </p>
+    <p> Reported Time     : {{thread.last_post_date}} </p>
+    <p> Issue Title       : {{ thread.title }}  </p>
+    <p> Issue Description : {{ content }} </p>
+    
+{% endblock %}
