@@ -37,6 +37,9 @@ class CompetitionForm(forms.ModelForm):
             'published',
             'enable_medical_image_viewer',
             'enable_detailed_results',
+            # change start
+            'enable_docker_submission',
+            # change end
             'admins',
             'show_datasets_from_yaml',
             'reward',

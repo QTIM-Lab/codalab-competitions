@@ -65,11 +65,28 @@
                 </div>
             </form>
         {% else %}
+            {% if phase.competition.enable_docker_submission %}
+
+            <h1>DOCKER SUBMISSION ENABLED </h1>
+            <!-- Submit Docker Button -->
+
+            <button id=submit-button type="button" data-toggle="modal" data-target="#submit-docker-dialog" class="btn btn-secondary">Submit Docker</button>
+
+            <!-- Submit Docker Button -->
+
+            {% else %}
+
+            <h1>DOCKER SUBMISSION DISABLED</h1>
+            <!-- original code from codalab -->
+
             <button id="fileUploadButton"
                     class="button btn btn-primary {% if not phase.reference_data %}disabled{% endif %}"
                     {% if not phase.reference_data %}disabled="disabled"{% endif %}>
                 Submit
-            </button>
+            </button> 
+
+            <!-- original code from codalab -->
+            {% endif %}
         {% endif %}
 
 
@@ -152,6 +169,28 @@
             </table>
         </div>
     </div>
+<div class="modal fade" id="submit-docker-dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Submit Docker</h4>
+            </div>
+            <div class="modal-body">
+                <h4>Submit Docker Run Command</h4>
+
+                <textarea id="docker-run-command" type=text style="width: 500px; height: 250px;">cpmchallenges/miccai-2020:training_phase_dl_submission</textarea>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+                 <button id="submit-docker" class="btn btn-primary">Send</button>    
+            </div>
+        </div>
+    </div>
+</div>
 {% include "web/common/_submission_details_template.html" %}
 {% endif %}
 
@@ -216,3 +255,6 @@
         test_if_done()
     })
 </script>
+<!-- Docker Submission Front End -->
+<script type="text/javascript" src="{{STATIC_URL}}js/submit_docker.js"></script>
+<!-- Docker Submission Front End -->
