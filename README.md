@@ -1,6 +1,6 @@
 # CodaLab [![Circle CI](https://circleci.com/gh/codalab/codalab-competitions.svg?style=shield)](https://circleci.com/gh/codalab/codalab-competitions)
 
-## Sneaking in a submodule test
+## Sneaking in a submodule test:"new code"
 
 ## What is CodaLab?
 
